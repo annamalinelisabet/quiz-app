@@ -1,22 +1,23 @@
 import React from 'react'
-import { Button, StyleSheet, Text, View } from 'react-native'
-import { VStack } from 'native-base'
+import { ImageBackground, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
-import Spacer from '../components/Spacer'
+import Button from '../components/Button'
+
+const backgroundImg = { uri: 'https://images.pexels.com/photos/7034523/pexels-photo-7034523.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' }
 
 const WelcomeScreen = () => {
-
     const navigation = useNavigation()
 
-  return (
-    <View style={styles.container}>
-        <VStack>
-            <Text style={styles.text}>QUIZZZZ</Text>
-            <Spacer size={30} />
-            <Button color='#1d3557' onPress={() => navigation.navigate('Quiz')} title='Start' />
-        </VStack>
-    </View>
-  )
+    return (
+        <View style={styles.container}>
+            <ImageBackground source={backgroundImg} resizeMode='cover' style={styles.wrapper}>
+                <Pressable style={[styles.textBox, { transform: [{ rotate: '-6deg' }] }]} onPress={() => navigation.navigate('Quiz')}>
+                    <Text style={[styles.text, { fontSize: 60 }]}>QUIZZZZ</Text>
+                </Pressable>
+                <Button title='start' onPress={() => navigation.navigate('Quiz')} />
+            </ImageBackground>
+        </View>
+    )
 }
 
 export default WelcomeScreen
@@ -24,13 +25,26 @@ export default WelcomeScreen
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        backgroundColor: '#f1faee',
-        justifyContent: 'center'
+    },
+    wrapper: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    textBox: {
+        backgroundColor: '#bfc5fb',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 10
+    },
+    smallTextBox: {
+        backgroundColor: '#6A79F5',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+        borderRadius: 2
     },
     text: {
-        color: '#45789d',
-        fontSize: 54,
-        fontWeight: 'bold'
+        color: 'white',
+        fontWeight: 'bold',
     }
 })

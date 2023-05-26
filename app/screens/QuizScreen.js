@@ -1,95 +1,61 @@
-import React, { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator, Button, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
-import { VStack } from 'native-base'
-import { useNavigation } from '@react-navigation/native'
-import axios from 'axios'
+import React, { useState } from 'react'
+import { ImageBackground, StyleSheet, Text, View, Pressable } from 'react-native'
+import { HStack, VStack } from 'native-base'
+import Button from '../components/Button'
 import Spacer from '../components/Spacer'
+import QuizModal from '../components/QuizModal'
+import DifficultyModal from '../components/DifficultyModal'
+
+const backgroundImg = { uri: 'https://images.pexels.com/photos/1982485/pexels-photo-1982485.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' }
 
 const QuizScreen = () => {
 
-    const navigation = useNavigation()
+    categoryColor = '#6A79F5'
 
-    const [questions, setQuestions] = useState([])
-    const [index, setIndex] = useState(0)
-    const [points, setPoints] = useState(0)
-    const [showModal, setShowModal] = useState(false)
-    const [answerOptions, setAnswerOptions] = useState([])
-    const [correct, setCorrect] = useState(null)
-    const [nextQuestion, setNextQuestion] = useState(false)
-    const currentQuestion = questions[index]
+    const [startQuiz, setStartQuiz] = useState(false)
+    const [category, setCategory] = useState('')
+    const [chooseDifficulty, setChooseDifficulty] = useState(false)
+    const [difficulty, setDifficulty] = useState('')
 
-    const getQuestions = useCallback(async () => {
-        const res = await axios.get('https://the-trivia-api.com/v2/questions')
-        setQuestions(res.data)
+    const handleCategory = (category) => {
+        setCategory(category)
+        setChooseDifficulty(true)
+    }
 
-        // ! LÄGG TILL ERROR HÄR
-    }, [])
-    
-    useEffect(() => {
-        getQuestions()
-    }, [getQuestions])
-
-    const handleAnswer = ((rightAnswer) => {
-        if(correct === null) {
-            if(rightAnswer) {
-                setPoints(points + 1)
-                setCorrect(true)
-            } else {
-                setCorrect(false)
-            }
-            setNextQuestion(true)
-        }
-    })
-
-    const handleNextQuestion = (() => {
-        setNextQuestion(false)
-        setIndex(index + 1)
-        setCorrect(null)
-    })
-    
-    useEffect(() => {
-        console.log(currentQuestion)
-      if(index > 9) {
-        setShowModal(true)
-      }
-    }, [index, currentQuestion])
-
-    useEffect(() => {
-        if(currentQuestion) {
-            const choices = [...currentQuestion.incorrectAnswers, currentQuestion.correctAnswer]
-            setAnswerOptions(choices.sort(() => Math.random() - 0.5))
-        }
-    }, [currentQuestion])
-    
     return (
-    <View style={styles.container}>
-        { !currentQuestion
-            ? <ActivityIndicator color='#1d3557' />     
-            : <VStack flex={1}>
-                <VStack flex={1}>
-                    <Text>Question {index +1}/10</Text>
-                    <Spacer size={80} />
-                    <Text style={styles.question}>{currentQuestion.question.text}</Text>
-                </VStack>
-                <VStack>
-                    {answerOptions.map((option, i) => (
-                        <Pressable key={i} style={styles.answerBox} backgroundColor={correct === null ? '#1d3557' : correct && option === currentQuestion.correctAnswer ? 'green' : 'red'} onPress={() => handleAnswer(option === currentQuestion.correctAnswer)}>
-                            <Text style={styles.answerText}>{option}</Text>
+        <View style={styles.container}>
+            <ImageBackground source={backgroundImg} resizeMode='cover' style={styles.wrapper}>
+                {
+                    !chooseDifficulty && <>
+                        <Pressable style={[styles.textBox, { transform: [{ rotate: '1deg' }] }]} onPress={() => navigation.navigate('Quiz')}>
+                            <Text style={styles.text}>pick a category</Text>
                         </Pressable>
-                    ))}
-                { nextQuestion && <Text onPress={handleNextQuestion}>Next question</Text> }
-                </VStack>
-            </VStack>
-        }
-        <Modal visible={showModal}>
-            <View>
-                <Text padding={20}>{points} / 10 correct answers!</Text>
-                <Button color='#1d3557' onPress={() => navigation.navigate('Home')} title='Close' />
-            </View>
-        </Modal>
-        
-    </View>
-  )
+                        <Spacer size={20} />
+                        <VStack space={5}>
+                            <HStack justifyContent='center' space={5}>
+                                <Button flex={1} title='music' onPress={() => handleCategory('music')} />
+                                <Button flex={1} title='sport & leisure' onPress={() => handleCategory('sport_and_leisure')} />
+                            </HStack>
+                            <HStack justifyContent='center' space={5}>
+                                <Button title='arts & literature' onPress={() => handleCategory('arts_and_literature')} />
+                                <Button title='film & tv' onPress={() => handleCategory('film_and_tv')} />
+                            </HStack>
+                            <HStack justifyContent='center' space={5}>
+                                <Button title='history' onPress={() => handleCategory('history')} />
+                                <Button title='society & culture' onPress={() => handleCategory('society_and_culture')} />
+                            </HStack>
+                            <HStack justifyContent='center' space={5}>
+                                <Button title='geography' onPress={() => handleCategory('geography')} />
+                                <Button title='science' onPress={() => handleCategory('science')} />
+                            </HStack>
+                        </VStack>
+                    </>
+                }
+                {startQuiz && <QuizModal setStartQuiz={setStartQuiz} category={category} difficulty={difficulty} />}
+                {chooseDifficulty && <DifficultyModal setStartQuiz={setStartQuiz} category={category} setDifficulty={setDifficulty} setChooseDifficulty={setChooseDifficulty} />}
+            </ImageBackground>
+        </View>
+    )
 }
 
 export default QuizScreen
@@ -97,23 +63,22 @@ export default QuizScreen
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f1faee',
-        paddingVertical: 70,
-        paddingHorizontal: 25
     },
-    question: {
-        color: '#45789d',
-        fontSize: 24,
-        fontWeight: 'bold',
-        textTransform: 'uppercase'
+    wrapper: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
-    answerBox: {
-        padding: 20,
-        marginBottom: 10,
+    textBox: {
+        backgroundColor: '#bfc5fb',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
         borderRadius: 10
     },
-    answerText: {
-        color: '#f1faee',
-        fontSize: 20   
+    text: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 28,
+        textTransform: 'uppercase'
     }
 })
